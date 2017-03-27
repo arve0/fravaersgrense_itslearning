@@ -1,0 +1,23 @@
+{
+  "name": "fravaersgrense_itslearning",
+  "version": "1.0.0",
+  "description": "Regner ut fraværsgrensen til dine elever i itslearning",
+  "main": "main.js",
+  "scripts": {
+    "start": "./node_modules/.bin/electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arve0/fravaersgrense_itslearning.git"
+  },
+  "author": "Arve Seljebu",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/arve0/fravaersgrense_itslearning/issues"
+  },
+  "homepage": "https://github.com/arve0/fravaersgrense_itslearning#readme",
+  "dependencies": {
+    "electron": "^1.6.4-beta"
+  }
+}
