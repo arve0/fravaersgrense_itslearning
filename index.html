@@ -4,20 +4,55 @@
 <head>
   <meta charset="UTF-8">
   <title>Hello World!</title>
+  <style>
+    html {
+      height: 100%;
+    }
+    
+    body {
+      height: 100%;
+      padding: 0;
+      margin: 0;
+    }
+    
+    #menu {
+      border-bottom: 1px solid;
+    }
+    
+    #menu li {
+      display: inline-block;
+      font-size: 18px;
+      font-family: sans-serif;
+      padding: 10px;
+      background-color: #eee;
+      margin-left: 5px;
+      margin-bottom: 5px;
+      margin-top: 5px;
+    }
+    
+    #menu li:hover {
+      cursor: pointer;
+    }
+    
+    webview {
+      height: 100%;
+      width: 100%;
+    }
+  </style>
 </head>
 
 <body>
-  <h1>Hello World!</h1>
-  We are using node
-  <script>
-    document.write(process.versions.node)
-  </script>, Chrome
-  <script>
-    document.write(process.versions.chrome)
-  </script>, and Electron
-  <script>
-    document.write(process.versions.electron)
-  </script>.
+
+  <nav id=menu>
+    <li><a onclick=login()>Login</a></li>
+    <li><a onclick=courses()>Fag</a></li>
+    <li><a onclick=settings()>Innstillinger</a></li>
+  </nav>
+
+  <webview id=view src="https://stfk.itslearning.com" height=100% width=100%></webview>
+
+  <script src=index.js></script>
+
 </body>
 
 </html>
