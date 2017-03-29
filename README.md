@@ -1,5 +1,5 @@
 # TODO
 
-- XMLHttpRequest promise
-- popup som viser framgangsmåte
 - vis resultat
+- fin frontend / visning (hent HTML i bakgrunnn)
+- framgangsmåte / hjelp
