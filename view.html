@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Oversikt fravær</title>
+  <style>
+    th {
+      text-align: left;
+      padding-right: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Totalt fravær</h1>
+  <div id="output"></div>
+
+  <script>
+    const output = document.getElementById('output')
+    const result = JSON.parse(atob(location.hash.slice(1)))
+    output.innerHTML = View(result)
+
+    function View(attendence) {
+      let v = '<table>'
+      for (let student in attendence) {
+        v += `<tr><th>${student}</th><td>${attendence[student].length}</td></tr>`
+      }
+      v += '</table>'
+      return v
+    }
+  </script>
+</body>
+
+</html>

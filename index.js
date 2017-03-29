@@ -4,7 +4,7 @@ const path = require('path')
 const urls = {
   prefix: 'https://stfk.itslearning.com/', // TODO: settings
   courses: 'Course/AllCourses.aspx',
-  settings: ''
+  settings: localUrl('settings.html')
 }
 
 let steps = [
@@ -73,16 +73,21 @@ let steps = [
         ${toArr}
         ${get}
 
-        const selectEl = document.getElementById('ctl00_ContentPlaceHolder_TermsList');
+        const selectEl = document.getElementById('ctl00_ContentPlaceHolder_TermsList')
         const terms = toArr(selectEl.options).map(term => term.value).filter(term => term)
 
-        const absence = {};
+        const absence = {}
         Promise.all(terms.map(async (term) => {
-          const reports = toArr(document.querySelectorAll('a[href^="ReportForLearner.aspx"]'));
+          const reports = toArr(document.querySelectorAll('a[href^="ReportForLearner.aspx"]'))
           await Promise.all(reports.map(${getStudentAbsence}))
-          return absence;
-        }))
-      `, (res) => console.log(res[1]))
+          return absence
+        })).then(() => absence)
+      `, (res) => {
+          const str = JSON.stringify(res)
+          const b64 = btoa(str)
+          contents.disablewebsecurity = true
+          contents.loadURL(localUrl('view.html') + `#${b64}`)
+        })
     }
   }
 ]
@@ -95,15 +100,15 @@ webview.addEventListener('console-message', (event) => {
 
 webview.addEventListener('did-finish-load', () => {
 
-  const url = webview.getURL()
-  console.log('URL: ' + url)
+  const currentUrl = webview.getURL()
+  console.log('URL: ' + currentUrl)
 
   steps.forEach((step) => {
     // strings should match exactly
-    if (typeof step.url === 'string' && url === step.url) {
+    if (typeof step.url === 'string' && currentUrl === step.url) {
       console.log('Step: ' + step.url)
       step.onLoad(webview)
-    } else if (typeof step.url !== 'string' && url.search(step.url) !== -1) {
+    } else if (typeof step.url !== 'string' && currentUrl.search(step.url) !== -1) {
       console.log('Step: ' + step.url)
       step.onLoad(webview)
     }
@@ -118,19 +123,26 @@ function courses() {
   webview.loadURL(urls.prefix + urls.courses)
 }
 function settings() {
-  webview.loadURL(url.format({
-    pathname: path.join(__dirname, 'settings.html'),
-    protocol: 'file:',
-    slashes: true
-  }))
+  webview.loadURL(urls.settings)
 }
 
 // helper functions
 
 /**
+ * get url of local file in current directory
+ */
+function localUrl(filename) {
+  return url.format({
+    pathname: path.join(__dirname, filename),
+    protocol: 'file:',
+    slashes: true
+  })
+}
+
+/**
  * Get HTML document from url. Resolves as DOM object.
- * 
- * @param {*string} url 
+ *
+ * @param {*string} url
  * @returns {Promise}
  */
 function get(url) {
@@ -156,14 +168,14 @@ function get(url) {
 /**
  * convert arrLike to array
  */
-function toArr (arrLike) { 
-  return Array.prototype.slice.call(arrLike) 
+function toArr(arrLike) {
+  return Array.prototype.slice.call(arrLike)
 }
 
 /**
  * get student absence
  */
-async function getStudentAbsence (report) {
+async function getStudentAbsence(report) {
   const url = report.href.replace(/TermID=[0-9]+/, 'TermID=' + term)
   const DOM = await get(url);
 
