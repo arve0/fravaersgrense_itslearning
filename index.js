@@ -81,7 +81,7 @@ let steps = [
           const reports = toArr(document.querySelectorAll('a[href^="ReportForLearner.aspx"]'))
           await Promise.all(reports.map(${getStudentAbsence}))
           return absence
-        })).then(() => absence)
+        })).then(() => absence).catch(err => console.error(err))
       `, (res) => {
           const str = JSON.stringify(res)
           const b64 = btoa(str)
@@ -185,13 +185,19 @@ async function getStudentAbsence(report) {
   // remove header rows
   rows = rows.filter(row => !row.querySelector('th'));
   // get what we need in each row
-  rows = rows.map(row =>
-    row.querySelector(
-      'td[headers="ctl00_ContentPlaceHolder_AttendanceReport_AttendanceDataGrid_DataGrid_ctl06"] > div > div'
-    ).innerHTML
-    + ' ' + row.querySelector(
-      'td[headers="ctl00_ContentPlaceHolder_AttendanceReport_AttendanceDataGrid_DataGrid_ctl02"] > span'
-    ).innerHTML);
+  rows = rows.map(row => {
+    if (row.querySelector(
+              'td[headers="ctl00_ContentPlaceHolder_AttendanceReport_AttendanceDataGrid_DataGrid_ctl06"] > div > div'
+            ) === null) {
+              return '';  // no attendance records
+            }
+    var s = row.querySelector(
+              'td[headers="ctl00_ContentPlaceHolder_AttendanceReport_AttendanceDataGrid_DataGrid_ctl06"] > div > div'
+            ).innerHTML
+            + ' ' + row.querySelector(
+              'td[headers="ctl00_ContentPlaceHolder_AttendanceReport_AttendanceDataGrid_DataGrid_ctl02"] > span'
+            ).innerHTML
+    return s })
 
   // keep only rows with UÅ, TFU or TFE
   rows = rows.filter(row => {

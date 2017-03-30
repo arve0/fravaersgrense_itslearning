@@ -4,6 +4,7 @@
   "description": "Regner ut fraværsgrensen til dine elever i itslearning",
   "main": "main.js",
   "scripts": {
+    "build": "electron-packager .",
     "start": "./node_modules/.bin/electron .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -19,5 +20,8 @@
   "homepage": "https://github.com/arve0/fravaersgrense_itslearning#readme",
   "dependencies": {
     "electron": "^1.6.4-beta"
+  },
+  "devDependencies": {
+    "electron-packager": "^8.6.0"
   }
 }
