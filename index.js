@@ -85,7 +85,6 @@ let steps = [
       `, (res) => {
           const str = JSON.stringify(res)
           const b64 = btoa(str)
-          contents.disablewebsecurity = true
           contents.loadURL(localUrl('view.html') + `#${b64}`)
         })
     }
