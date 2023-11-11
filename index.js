@@ -44,23 +44,27 @@ let steps = [
     url: /DashboardMenu\.aspx\?LocationType=Hierarchy&LocationId=/,
     onLoad: (contents) => {
       // go to courses
-      contents.loadURL(urls.prefix + 'Course/AllCourses.aspx')
+      contents.loadURL(urls.prefix + urls.courses)
     }
   }, {
-    name: 'Course page',
-    url: /ContentArea\/ContentArea\.aspx\?LocationID=[0-9]+&LocationType=1/,
+    name: 'Courses',
+    url: urls.prefix + urls.courses,
     onLoad: (contents) => {
-      // course selected -> go to absence reports
-      const url = contents.getURL()
-      const id = url.match(/ID=([0-9]+)/)[1]
-      console.log('ID: ' + id)
-      contents.loadURL(`${urls.prefix}/Attendance/Teacher/KeepAttendance.aspx?CourseId=${id}&TermId=0&Year=0`)
+      // change links to point to course attandace
+      contents.executeJavaScript(`
+        ${toArr}
+        let courseLinks = toArr(document.querySelectorAll('a[href^="/main.aspx?CourseID"]'))
+        courseLinks.forEach(link => {
+          let ID = link.href.match(/CourseID=([0-9]+)/)[1]
+          link.href = \`/Attendance/Teacher/KeepAttendance.aspx?CourseId=\${ID}\`
+        })
+      `)
     }
   }, {
     name: 'Attendance frontpage',
     url: /Attendance\/Teacher\/KeepAttendance\.aspx\?CourseId=/,
     onLoad: (contents) => {
-      // redirect to attendance reports
+      // select attendance reports
       contents.executeJavaScript(`document.querySelector('#ctl00_PageTabs > ul > li:nth-child(3) > h2 > a').click()`)
     }
   }, {
@@ -71,6 +75,7 @@ let steps = [
       contents.executeJavaScript(`
         // includes
         ${toArr}
+        ${parseDOM}
         ${get}
 
         const selectEl = document.getElementById('ctl00_ContentPlaceHolder_TermsList')
@@ -145,24 +150,27 @@ function localUrl(filename) {
  * @returns {Promise}
  */
 function get(url) {
-  return new Promise((resolve, reject) => {
-    var req = new XMLHttpRequest();
-    req.addEventListener('load', reqListener);
-    req.open('GET', url, true);
-    req.send();
+  // send cookies
+  let opts = { credentials: 'same-origin' }
 
-    function reqListener() {
-      if (this.status !== 200) {
-        return reject(new Error(`Got HTTP status code ${this.status}.`));
-      }
-      try {
-        resolve(new DOMParser().parseFromString(this.responseText, 'text/html'));
-      } catch (err) {
-        reject(err);
-      }
+  return fetch(url, opts).then(response => {
+    if (response.status >= 200 && response.status < 300) {
+      return response.text()
+    } else {
+      let error = new Error(reponse.statusText)
+      error.response = response
+      throw error
     }
-  })
+  }).then(parseDOM)
 }
+
+/**
+ * takes text/html, returns DOM object
+ */
+function parseDOM(text) {
+  return new DOMParser().parseFromString(text, 'text/html')
+}
+
 
 /**
  * convert arrLike to array
@@ -186,17 +194,18 @@ async function getStudentAbsence(report) {
   // get what we need in each row
   rows = rows.map(row => {
     if (row.querySelector(
-              'td[headers="ctl00_ContentPlaceHolder_AttendanceReport_AttendanceDataGrid_DataGrid_ctl06"] > div > div'
-            ) === null) {
-              return '';  // no attendance records
-            }
+      'td[headers="ctl00_ContentPlaceHolder_AttendanceReport_AttendanceDataGrid_DataGrid_ctl06"] > div > div'
+    ) === null) {
+      return '';  // no attendance records
+    }
     var s = row.querySelector(
-              'td[headers="ctl00_ContentPlaceHolder_AttendanceReport_AttendanceDataGrid_DataGrid_ctl06"] > div > div'
-            ).innerHTML
-            + ' ' + row.querySelector(
-              'td[headers="ctl00_ContentPlaceHolder_AttendanceReport_AttendanceDataGrid_DataGrid_ctl02"] > span'
-            ).innerHTML
-    return s })
+      'td[headers="ctl00_ContentPlaceHolder_AttendanceReport_AttendanceDataGrid_DataGrid_ctl06"] > div > div'
+    ).innerHTML
+      + ' ' + row.querySelector(
+        'td[headers="ctl00_ContentPlaceHolder_AttendanceReport_AttendanceDataGrid_DataGrid_ctl02"] > span'
+      ).innerHTML
+    return s
+  })
 
   // keep only rows with UÅ, TFU or TFE
   rows = rows.filter(row => {
